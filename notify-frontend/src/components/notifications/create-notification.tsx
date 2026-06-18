@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import * as z from "zod";
@@ -50,7 +50,9 @@ import { cn } from "@/lib/utils";
 import { useListTemplates } from "@/http/routes/templates/list-templates";
 import { useCreateNotification } from "@/http/routes/notifications/create-notification";
 import { useListAllRecipients } from "@/http/routes/recipients/list-all-recipients";
+import { toast } from "sonner";
 import type { Recipient } from "@/pages/private/recipients";
+const STORAGE_KEY = "notification-draft";
 const notificationSchema = z
   .object({
     title: z
@@ -92,7 +94,7 @@ type NotificationFormData = z.infer<typeof notificationSchema>;
 export function CreateNotification() {
   const [isPreviewOpen, setIsPreviewOpen] = useState(false);
   const { data } = useListTemplates();
-  const { mutateAsync: createNotification } = useCreateNotification();
+  const { mutateAsync: createNotification, isPending: isCreating } = useCreateNotification();
   const { data: recipients } = useListAllRecipients();
   const recipientsData = recipients?.recipients;
 
@@ -100,21 +102,53 @@ export function CreateNotification() {
 
   const form = useForm<NotificationFormData>({
     resolver: zodResolver(notificationSchema),
-    defaultValues: {
-      title: "",
-      channel: undefined,
-      recipientId: "",
-      templateId: "",
-      content: "",
-      priority: 5,
-      scheduleEnabled: false,
-      scheduledDate: undefined,
-      scheduledTime: "",
+    defaultValues: () => {
+      const saved = localStorage.getItem(STORAGE_KEY);
+      if (saved) {
+        try {
+          const parsed = JSON.parse(saved);
+          return {
+            title: parsed.title || "",
+            channel: parsed.channel || undefined,
+            recipientId: parsed.recipientId || "",
+            templateId: parsed.templateId || "",
+            content: parsed.content || "",
+            priority: parsed.priority ?? 5,
+            scheduleEnabled: parsed.scheduleEnabled ?? false,
+            scheduledDate: parsed.scheduledDate ? new Date(parsed.scheduledDate) : undefined,
+            scheduledTime: parsed.scheduledTime || "",
+          };
+        } catch {
+          localStorage.removeItem(STORAGE_KEY);
+        }
+      }
+      return {
+        title: "",
+        channel: undefined,
+        recipientId: "",
+        templateId: "",
+        content: "",
+        priority: 5,
+        scheduleEnabled: false,
+        scheduledDate: undefined,
+        scheduledTime: "",
+      };
     },
   });
 
   const watchedValues = form.watch();
   const scheduleEnabled = watchedValues.scheduleEnabled;
+
+  useEffect(() => {
+    const subscription = form.watch((values) => {
+      const toSave = { ...values };
+      if (toSave.scheduledDate instanceof Date) {
+        toSave.scheduledDate = toSave.scheduledDate.toISOString();
+      }
+      localStorage.setItem(STORAGE_KEY, JSON.stringify(toSave));
+    });
+    return () => subscription.unsubscribe();
+  }, [form]);
 
   const getTypeIcon = (type: string) => {
     switch (type) {
@@ -169,12 +203,18 @@ export function CreateNotification() {
 
     console.log("Form Data:", apiData);
     await createNotification(apiData);
+    localStorage.removeItem(STORAGE_KEY);
     form.reset();
   };
 
   const handleSaveDraft = () => {
-    console.log("Saving draft:");
-    alert("Rascunho salvo com sucesso!");
+    const values = form.getValues();
+    const toSave = { ...values };
+    if (toSave.scheduledDate instanceof Date) {
+      toSave.scheduledDate = toSave.scheduledDate.toISOString();
+    }
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(toSave));
+    toast.success("Rascunho salvo!");
   };
 
   return (
@@ -252,14 +292,20 @@ export function CreateNotification() {
                             </SelectTrigger>
                           </FormControl>
                           <SelectContent>
-                            {recipientsData?.map((recipient: Recipient) => (
-                              <SelectItem
-                                key={recipient.id}
-                                value={recipient?.id!}
-                              >
-                                {recipient.name}
-                              </SelectItem>
-                            ))}
+                            {recipientsData && recipientsData.length > 0 ? (
+                              recipientsData.map((recipient: Recipient) => (
+                                <SelectItem
+                                  key={recipient.id}
+                                  value={recipient?.id!}
+                                >
+                                  {recipient.name}
+                                </SelectItem>
+                              ))
+                            ) : (
+                              <div className="p-2 text-sm text-muted-foreground text-center">
+                                Nenhum destinatário encontrado
+                              </div>
+                            )}
                           </SelectContent>
                         </Select>
                         <FormMessage />
@@ -283,14 +329,20 @@ export function CreateNotification() {
                             </SelectTrigger>
                           </FormControl>
                           <SelectContent>
-                            {templates.map((template) => (
-                              <SelectItem key={template.id} value={template.id}>
-                                <div className="flex items-center gap-2">
-                                  {getTypeIcon(template.channel)}
-                                  {template.title}
-                                </div>
-                              </SelectItem>
-                            ))}
+                            {templates.length > 0 ? (
+                              templates.map((template) => (
+                                <SelectItem key={template.id} value={template.id}>
+                                  <div className="flex items-center gap-2">
+                                    {getTypeIcon(template.channel)}
+                                    {template.title}
+                                  </div>
+                                </SelectItem>
+                              ))
+                            ) : (
+                              <div className="p-2 text-sm text-muted-foreground text-center">
+                                Nenhum template encontrado
+                              </div>
+                            )}
                           </SelectContent>
                         </Select>
                         <FormMessage />
@@ -633,9 +685,10 @@ export function CreateNotification() {
                   <Button
                     type="submit"
                     className="w-full cursor-pointer"
+                    disabled={isCreating}
                   >
                     <Send className="mr-2 h-4 w-4" />
-                    {scheduleEnabled ? "Agendar" : "Enviar Agora"}
+                    {isCreating ? "Enviando..." : scheduleEnabled ? "Agendar" : "Enviar Agora"}
                   </Button>
                 </div>
               </CardContent>
