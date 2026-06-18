@@ -22,7 +22,6 @@ export function useGetNotifications() {
         }
 
         const result: GetNotificatonsResponse = await response.json();
-        console.log(result.notifications);
         if (!result.notifications || !Array.isArray(result.notifications)) {
           console.warn(
             "API retornou notifications inválido, usando array vazio"

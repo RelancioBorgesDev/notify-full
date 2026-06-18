@@ -15,7 +15,7 @@ export function useListAllLogs() {
           }
         );
 
-        if (!(response.status === 200)) {
+        if (!response.ok) {
           throw new Error(
             `Erro HTTP: ${response.status} - ${response.statusText}`
           );

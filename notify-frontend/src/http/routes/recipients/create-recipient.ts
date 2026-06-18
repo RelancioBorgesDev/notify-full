@@ -19,7 +19,7 @@ export function useCreateRecipient() {
           }
         );
 
-        if (!(response.status === 201)) {
+        if (!response.ok) {
           throw new Error(
             `Erro HTTP: ${response.status} - ${response.statusText}`
           );
