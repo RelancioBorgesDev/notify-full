@@ -25,7 +25,6 @@ import { useEffect, useState } from "react";
 import { Textarea } from "../ui/textarea";
 import { Label } from "../ui/label";
 import type { Template } from "@/http/types/templates/list-templates";
-import { toast } from "sonner";
 import { useUpdateTemplate } from "@/http/routes/templates/update-templtate";
 
 const templateSchema = z

@@ -100,40 +100,42 @@ export function CreateNotification() {
 
   const templates = data?.templates ?? [];
 
+  const defaultValues = (() => {
+    const saved = localStorage.getItem(STORAGE_KEY);
+    if (saved) {
+      try {
+        const parsed = JSON.parse(saved);
+        return {
+          title: parsed.title || "",
+          channel: parsed.channel || undefined,
+          recipientId: parsed.recipientId || "",
+          templateId: parsed.templateId || "",
+          content: parsed.content || "",
+          priority: parsed.priority ?? 5,
+          scheduleEnabled: parsed.scheduleEnabled ?? false,
+          scheduledDate: parsed.scheduledDate ? new Date(parsed.scheduledDate) : undefined,
+          scheduledTime: parsed.scheduledTime || "",
+        };
+      } catch {
+        localStorage.removeItem(STORAGE_KEY);
+      }
+    }
+    return {
+      title: "",
+      channel: undefined,
+      recipientId: "",
+      templateId: "",
+      content: "",
+      priority: 5,
+      scheduleEnabled: false,
+      scheduledDate: undefined,
+      scheduledTime: "",
+    };
+  })() as NotificationFormData;
+
   const form = useForm<NotificationFormData>({
     resolver: zodResolver(notificationSchema),
-    defaultValues: () => {
-      const saved = localStorage.getItem(STORAGE_KEY);
-      if (saved) {
-        try {
-          const parsed = JSON.parse(saved);
-          return {
-            title: parsed.title || "",
-            channel: parsed.channel || undefined,
-            recipientId: parsed.recipientId || "",
-            templateId: parsed.templateId || "",
-            content: parsed.content || "",
-            priority: parsed.priority ?? 5,
-            scheduleEnabled: parsed.scheduleEnabled ?? false,
-            scheduledDate: parsed.scheduledDate ? new Date(parsed.scheduledDate) : undefined,
-            scheduledTime: parsed.scheduledTime || "",
-          };
-        } catch {
-          localStorage.removeItem(STORAGE_KEY);
-        }
-      }
-      return {
-        title: "",
-        channel: undefined,
-        recipientId: "",
-        templateId: "",
-        content: "",
-        priority: 5,
-        scheduleEnabled: false,
-        scheduledDate: undefined,
-        scheduledTime: "",
-      };
-    },
+    defaultValues,
   });
 
   const watchedValues = form.watch();
@@ -141,10 +143,11 @@ export function CreateNotification() {
 
   useEffect(() => {
     const subscription = form.watch((values) => {
-      const toSave = { ...values };
-      if (toSave.scheduledDate instanceof Date) {
-        toSave.scheduledDate = toSave.scheduledDate.toISOString();
-      }
+      const { scheduledDate, ...rest } = values;
+      const toSave = {
+        ...rest,
+        scheduledDate: scheduledDate instanceof Date ? scheduledDate.toISOString() : scheduledDate,
+      };
       localStorage.setItem(STORAGE_KEY, JSON.stringify(toSave));
     });
     return () => subscription.unsubscribe();
@@ -204,15 +207,26 @@ export function CreateNotification() {
     console.log("Form Data:", apiData);
     await createNotification(apiData);
     localStorage.removeItem(STORAGE_KEY);
-    form.reset();
+    form.reset({
+      title: "",
+      channel: undefined,
+      recipientId: "",
+      templateId: "",
+      content: "",
+      priority: 5,
+      scheduleEnabled: false,
+      scheduledDate: undefined,
+      scheduledTime: "",
+    });
   };
 
   const handleSaveDraft = () => {
     const values = form.getValues();
-    const toSave = { ...values };
-    if (toSave.scheduledDate instanceof Date) {
-      toSave.scheduledDate = toSave.scheduledDate.toISOString();
-    }
+    const { scheduledDate, ...rest } = values;
+    const toSave = {
+      ...rest,
+      scheduledDate: scheduledDate instanceof Date ? scheduledDate.toISOString() : scheduledDate,
+    };
     localStorage.setItem(STORAGE_KEY, JSON.stringify(toSave));
     toast.success("Rascunho salvo!");
   };

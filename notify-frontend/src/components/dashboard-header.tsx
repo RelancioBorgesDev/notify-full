@@ -15,7 +15,6 @@ import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { useUserProfile } from "@/http/routes/user/user-profile";
 import { useLogOut } from "@/http/routes/user/log-out";
 import { useGetNotifications } from "@/http/routes/notifications/get-notifications";
-import { Badge } from "@/components/ui/badge";
 import { Link } from "react-router";
 
 export function DashboardHeader() {

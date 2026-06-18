@@ -20,7 +20,7 @@ interface Recipient {
 }
 
 export default function ListRecipients() {
-  const { data, isLoading, isError } = useListAllRecipients();
+  const { data, isLoading } = useListAllRecipients();
   const { mutateAsync: updateRecipient } = useUpdateRecipient();
 
   if (isLoading) {
@@ -161,6 +161,7 @@ export default function ListRecipients() {
           <DeleteRecipientDialog
             recipientId={row.original.id}
             recipientName={row.original.name}
+            onConfirm={async () => {}}
             trigger={
               <Button
                 variant="ghost"

@@ -14,7 +14,6 @@ import {
   CheckCircle,
   Clock,
   TrendingUp,
-  Users,
   Loader2,
 } from "lucide-react";
 import { useGetNotifications } from "@/http/routes/notifications/get-notifications";

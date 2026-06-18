@@ -13,6 +13,7 @@ import { TemplatesPage } from "./pages/private/templates";
 import { LoadingSpinner } from "./components/loading-spinner";
 import { RecipientsPage } from "./pages/private/recipients";
 import { ErrorBoundary } from "./components/error-boundary";
+import { Toaster } from "./components/ui/sonner";
 
 export function ProtectedRoute({ children }: { children: JSX.Element }) {
   const { isLoading, isError } = useUserProfile();
@@ -29,6 +30,7 @@ export function App() {
   return (
     <QueryClientProvider client={queryClient}>
       <BrowserRouter>
+        <Toaster richColors />
         <Routes>
           <Route path="/" element={<Login />} />
           <Route path="/register" element={<Register />} />

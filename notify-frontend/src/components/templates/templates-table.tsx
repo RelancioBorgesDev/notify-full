@@ -4,9 +4,6 @@ import {
   Smartphone,
   Search,
   Filter,
-  ArrowUpDown,
-  ArrowUp,
-  ArrowDown,
   ChevronRight,
   ChevronLeft,
 } from "lucide-react";
