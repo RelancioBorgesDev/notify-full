@@ -31,9 +31,10 @@ import { useState } from "react";
 import { useListTemplates } from "@/http/routes/templates/list-templates";
 import EditTemplateDialog from "./edit-template-dialog";
 import DeleteTemplateDialog from "./delete-template-dialog";
+import { Loader2 } from "lucide-react";
 
 export default function TemplatesTable() {
-  const { data: templates } = useListTemplates();
+  const { data: templates, isLoading } = useListTemplates();
   const templateData = templates?.templates;
 
   const [searchTerm, setSearchTerm] = useState("");
@@ -143,6 +144,14 @@ export default function TemplatesTable() {
     startIndex,
     startIndex + itemsPerPage
   );
+
+  if (isLoading) {
+    return (
+      <div className="flex items-center justify-center min-h-[200px]">
+        <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
+      </div>
+    );
+  }
 
   return (
     <div className="space-y-6">

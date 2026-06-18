@@ -5,14 +5,30 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
-import { XCircle, Inbox } from "lucide-react";
+import { XCircle, Inbox, Loader2 } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { useListAllLogs } from "@/http/routes/notification-logs/list-all-logs";
 import type { Log } from "@/http/types/notification-logs/list-all-logs-response";
 
 export default function NotificationLogsError() {
-  const { data: logs } = useListAllLogs();
+  const { data: logs, isLoading } = useListAllLogs();
   const logsData = logs?.logs ?? [];
+
+  if (isLoading) {
+    return (
+      <Card>
+        <CardHeader>
+          <CardTitle>Análise de Erros</CardTitle>
+          <CardDescription>Carregando dados de erro...</CardDescription>
+        </CardHeader>
+        <CardContent>
+          <div className="flex items-center justify-center py-12">
+            <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
+          </div>
+        </CardContent>
+      </Card>
+    );
+  }
 
   const getStatusBadge = (status: string) => {
     const variants = {

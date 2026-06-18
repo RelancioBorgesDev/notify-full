@@ -1,6 +1,6 @@
 import type { ColumnDef } from "@tanstack/react-table";
 
-import { Edit, Mail, Phone, Trash2 } from "lucide-react";
+import { Edit, Mail, Phone, Trash2, Loader2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "../ui/badge";
 import { DataTable } from "../tables/data-table";
@@ -21,7 +21,15 @@ interface Recipient {
 
 export default function ListRecipients() {
   const { data, isLoading, isError } = useListAllRecipients();
-  const { mutate: updateRecipient } = useUpdateRecipient();
+  const { mutateAsync: updateRecipient } = useUpdateRecipient();
+
+  if (isLoading) {
+    return (
+      <div className="flex items-center justify-center min-h-[200px]">
+        <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
+      </div>
+    );
+  }
 
   const getStatusBadge = (status: string) => {
     const variants = {
@@ -138,7 +146,7 @@ export default function ListRecipients() {
             recipientPushToken={row.original.pushToken}
             recipientStatus={row.original.status}
             onConfirm={async (id, updatedData) => {
-              updateRecipient({
+              await updateRecipient({
                 recipientId: id,
                 data: updatedData,
               });
