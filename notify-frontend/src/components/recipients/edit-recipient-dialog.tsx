@@ -81,7 +81,6 @@ export default function EditRecipientDialog({
       await onConfirm(recipientId, data);
       setIsEditDialogOpen(false);
     } catch {
-      // Error handled by parent
     } finally {
       setIsSaving(false);
     }

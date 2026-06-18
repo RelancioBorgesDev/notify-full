@@ -41,7 +41,6 @@ export default function DeleteRecipientDialog({
       onConfirm?.(recipientId);
       setOpen(false);
     } catch {
-      // Toast already handled by mutation's onError
     } finally {
       setLoading(false);
     }

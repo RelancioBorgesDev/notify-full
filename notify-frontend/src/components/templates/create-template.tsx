@@ -118,7 +118,6 @@ export function CreateTemplate() {
       });
       form.reset();
     } catch {
-      // Toast already handled by mutation's onError
     }
   };
 

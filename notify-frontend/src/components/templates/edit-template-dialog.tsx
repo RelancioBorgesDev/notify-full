@@ -110,7 +110,6 @@ export default function EditTemplateDialog({
       });
       setIsDialogOpen(false);
     } catch {
-      // Toast already handled by mutation's onError
     }
   };
 

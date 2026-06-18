@@ -204,7 +204,6 @@ export function CreateNotification() {
       scheduledAt,
     };
 
-    console.log("Form Data:", apiData);
     await createNotification(apiData);
     localStorage.removeItem(STORAGE_KEY);
     form.reset({

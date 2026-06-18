@@ -155,9 +155,7 @@ export function NotificationsTable() {
     },
   ];
 
-  const handleRowSelectionChange = (selection: any) => {
-    console.log("Linhas selecionadas:", selection);
-  };
+  const handleRowSelectionChange = () => {};
 
   if (isLoading) {
     return <NotificationsTableSkeleton />;
