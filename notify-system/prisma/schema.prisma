@@ -1,0 +1,119 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+// Looking for ways to speed up your queries, or scale easily with your serverless or edge functions?
+// Try Prisma Accelerate: https://pris.ly/cli/accelerate-init
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+generator erd {
+  provider = "prisma-erd-generator"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id       String @id @default(uuid())
+  name     String @default("Unknown")
+  email    String @unique
+  status    UserStatus @default(ACTIVE)
+  password String
+
+  notificationsSent Notification[] @relation("SenderNotifications")
+
+  @@map("user")
+}
+
+model Recipient {
+  id        String   @id @default(uuid())
+  name      String
+  email     String  @unique
+  phone     String?  @unique
+  pushToken String?  @map("push_token")
+  status    UserStatus @default(ACTIVE)
+  createdAt DateTime @default(now()) @map("created_at")
+
+  notifications Notification[]
+
+  @@map("recipients")
+}
+
+model Template {
+  id        String   @id @default(uuid())
+  name      String 
+  channel   Channel
+  subject   String? 
+  body      String   @db.Text
+  createdAt DateTime @default(now()) @map("created_at")
+
+  notifications Notification[]
+
+  @@map("templates")
+}
+
+model NotificationLog {
+  id             String     @id @default(uuid())
+  notificationId String     @map("notification_id")
+  status         LogStatus
+  response       String?    @db.Text
+  errorMessage   String?    @db.Text
+  attempt        Int
+  sentAt         DateTime   @default(now()) @map("sent_at")
+
+  notification   Notification @relation(fields: [notificationId], references: [id])
+
+  @@map("notification_logs")
+}
+
+model Notification {
+  id          String             @id @default(uuid())
+  senderId    String?            @map("sender_id")
+  recipientId String             @map("recipient_id")
+  templateId  String?            @map("template_id")
+  channel     Channel            @default(EMAIL)
+  title       String
+  content     String
+  status      NotificationStatus @default(PENDING)
+  priority    Int                @default(1)
+  retries     Int                @default(0)
+  error       String?            @db.Text
+  readAt      DateTime?          @map("read_at")
+  scheduledAt DateTime?          @map("scheduled_at")
+  createdAt   DateTime           @default(now()) @map("created_at")
+
+  sender    User?              @relation("SenderNotifications", fields: [senderId], references: [id])
+  recipient Recipient          @relation(fields: [recipientId], references: [id])
+  template  Template?          @relation(fields: [templateId], references: [id])
+  logs      NotificationLog[]
+
+  @@map("notifications")
+}
+
+enum UserStatus {
+  ACTIVE
+  INACTIVE
+}
+
+enum Channel {
+  EMAIL
+  SMS
+  PUSH
+}
+
+enum LogStatus {
+  SUCCESS
+  FAIL
+}
+
+enum NotificationStatus {
+  PENDING
+  SENT
+  FAILED
+  READ
+}
+
