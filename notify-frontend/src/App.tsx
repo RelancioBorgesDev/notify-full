@@ -12,6 +12,7 @@ import { NotificationsPage } from "./pages/private/notifications";
 import { TemplatesPage } from "./pages/private/templates";
 import { LoadingSpinner } from "./components/loading-spinner";
 import { RecipientsPage } from "./pages/private/recipients";
+import { ErrorBoundary } from "./components/error-boundary";
 
 export function ProtectedRoute({ children }: { children: JSX.Element }) {
   const { isLoading, isError } = useUserProfile();
@@ -40,12 +41,23 @@ export function App() {
             }
           >
             <Route index element={<Navigate to="overview" replace />} />
-            <Route path="overview" element={<DashboardOverviewPage />} />
-            <Route path="recipients" element={<RecipientsPage />} />
-            <Route path="create-notification" element={<NotificationsPage />} />
-            <Route path="create-template" element={<TemplatesPage />} />
-            <Route path="logs" element={<LogsPage />} />
+            <Route path="overview" element={
+              <ErrorBoundary><DashboardOverviewPage /></ErrorBoundary>
+            } />
+            <Route path="recipients" element={
+              <ErrorBoundary><RecipientsPage /></ErrorBoundary>
+            } />
+            <Route path="create-notification" element={
+              <ErrorBoundary><NotificationsPage /></ErrorBoundary>
+            } />
+            <Route path="create-template" element={
+              <ErrorBoundary><TemplatesPage /></ErrorBoundary>
+            } />
+            <Route path="logs" element={
+              <ErrorBoundary><LogsPage /></ErrorBoundary>
+            } />
           </Route>
+          <Route path="*" element={<Navigate to="/" replace />} />
         </Routes>
       </BrowserRouter>
     </QueryClientProvider>
