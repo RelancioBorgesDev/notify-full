@@ -160,9 +160,8 @@ export default function EditTemplateDialog({
                             Template de Email
                           </div>
                         </SelectItem>
-                        {/* Se quiser habilitar depois:
                         <SelectItem value="SMS">SMS</SelectItem>
-                        <SelectItem value="PUSH">Push</SelectItem> */}
+                        <SelectItem value="PUSH">Push</SelectItem>
                       </SelectContent>
                     </Select>
                   )}

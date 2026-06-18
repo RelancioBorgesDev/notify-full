@@ -61,6 +61,7 @@ export default function EditRecipientDialog({
   trigger,
 }: EditRecipientDialogProps) {
   const [isEditDialogOpen, setIsEditDialogOpen] = useState(false);
+  const [isSaving, setIsSaving] = useState(false);
 
   const form = useForm<EditRecipientFormData>({
     resolver: zodResolver(editRecipientSchema),
@@ -74,9 +75,16 @@ export default function EditRecipientDialog({
     mode: "onChange",
   });
 
-  const handleEditRecipient = (data: EditRecipientFormData) => {
-    setIsEditDialogOpen(false);
-    onConfirm(recipientId, data);
+  const handleEditRecipient = async (data: EditRecipientFormData) => {
+    setIsSaving(true);
+    try {
+      await onConfirm(recipientId, data);
+      setIsEditDialogOpen(false);
+    } catch {
+      // Error handled by parent
+    } finally {
+      setIsSaving(false);
+    }
   };
 
   return (
@@ -180,10 +188,10 @@ export default function EditRecipientDialog({
               </Button>
               <Button
                 type="submit"
-                disabled={!form.formState.isValid}
+                disabled={!form.formState.isValid || isSaving}
                 className="disabled:cursor-not-allowed hover:bg-gray-600 disabled:bg-gray-500"
               >
-                Salvar Alterações
+                {isSaving ? "Salvando..." : "Salvar Alterações"}
               </Button>
             </div>
           </form>
